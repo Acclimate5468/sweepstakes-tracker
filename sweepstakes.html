@@ -280,6 +280,7 @@ function newOpp(){
     prize:'', arv:'', deadline:'', eligibility:'', locationRestrict:'', ageRestrict:'',
     entryMethod:'Online form', entryFrequency:'one-time', maxEntries:'',
     purchaseRequired:false, noPurchaseMethod:'',
+    entryLimitNote:'', householdLimit:'', affidavitRequired:false, amoeConfirmed:false,
     riskLevel:'medium', privacyConcern:'medium', timeRequired:'medium',
     eligibleSelf:'unknown', // yes | no | unknown
     redFlags:[],
@@ -540,7 +541,9 @@ function trackerCard(o){
   const d=o.deadline?daysUntil(o.deadline):null;
   let dl = !o.deadline ? '<span class="faint">No deadline</span>' :
     exp ? `<span class="tag red">Expired ${fmtDateShort(o.deadline)}</span>` :
-    `<span class="${d<=3?'tag amber':'muted'}">${d===0?'Ends today':d===1?'Ends tomorrow':d+'d left'}</span>`;
+    d===0 ? `<span class="tag red">⏰ Ends today</span>` :
+    d===1 ? `<span class="tag amber">⏳ Ends tomorrow</span>` :
+    `<span class="${d<=3?'tag amber':'muted'}">${d+'d left'}</span>`;
   const tot=totalEntriesFor(o.id);
   const can=canEnterToday(o);
   return `<div class="card click" onclick="openOppView('${o.id}')">
@@ -613,8 +616,12 @@ function openOppView(id){
     ['Entry method',o.entryMethod],
     ['Frequency',FREQ[o.entryFrequency]||o.entryFrequency],
     ['Max entries',o.maxEntries||'—'],
+    ['Entry limit',o.entryLimitNote||'—'],
+    ['Household limit',o.householdLimit||'—'],
     ['Purchase required?',o.purchaseRequired?'⚠️ Yes':'No'],
     ['No-purchase method',o.noPurchaseMethod||'—'],
+    ['Free entry confirmed?',o.amoeConfirmed?'✓ Yes':'—'],
+    ['Affidavit required?',o.affidavitRequired?'⚠️ Yes':'No'],
     ['Time required',o.timeRequired],
   ];
   h+=facts.map(([k,v])=>`<div class="kv"><span class="k">${k}</span><span class="v wrapnice">${esc(v)}</span></div>`).join('');
@@ -714,6 +721,14 @@ function renderOppEdit(isNew){
   h+=fNum('maxEntries','Max entries allowed (total)');
   h+=fCheck('purchaseRequired','Purchase required to enter (usually a red flag)');
   h+=fText('noPurchaseMethod','No-purchase / AMOE method');
+  h+=`</div>`;
+
+  // --- rules checklist (capture the fine print while reading official rules) ---
+  h+=`<div class="section-title" style="margin-left:0">Rules checklist</div><div class="card">`;
+  h+=`<div class="small muted" style="margin-bottom:8px">Capture the fine print while you read the official rules, so nothing gets missed.</div>`;
+  h+=`<div class="inline-grid">`+fText('entryLimitNote','Entry limit (e.g. 25/day)')+fText('householdLimit','Household / per-person limit')+`</div>`;
+  h+=fCheck('amoeConfirmed','Confirmed a free no-purchase entry method (AMOE)');
+  h+=fCheck('affidavitRequired','Winner must sign an affidavit / publicity release');
   h+=`</div>`;
 
   // --- risk review ---
@@ -927,9 +942,18 @@ function openQueueEdit(id){
   h+=`</div><button class="btn primary block" onclick="saveQueue()">Save lead</button>`;
   openSheet(h);
 }
+function normUrl(u){ return String(u||'').trim().toLowerCase().replace(/[#?].*$/,'').replace(/^https?:\/\//,'').replace(/^www\./,'').replace(/\/+$/,''); }
 function saveQueue(){
   if(!queueDraft.link.trim()){ toast('A link is required'); return; }
   const i=state.queue.findIndex(x=>x.id===queueDraft.id);
+  // duplicate guard: warn if this link is already queued or already reviewed
+  const nl=normUrl(queueDraft.link);
+  if(nl){
+    const dupO=state.opps.find(o=>normUrl(o.officialUrl)===nl || normUrl(o.rulesUrl)===nl);
+    const dupQ=state.queue.find(x=>x.id!==queueDraft.id && normUrl(x.link)===nl);
+    if(dupO && !confirm('You already reviewed this link ("'+(dupO.name||'a tracked sweepstakes')+'"). Add it to the queue anyway?')) return;
+    else if(!dupO && dupQ && !confirm('This link is already in your review queue. Add it again anyway?')) return;
+  }
   if(i<0) state.queue.unshift(queueDraft); else state.queue[i]=queueDraft;
   save(); closeModal(); render(); toast('Lead saved');
 }
@@ -1013,6 +1037,8 @@ function loadExample(){
     locationRestrict:'US (verify excluded states)', ageRestrict:'18+',
     entryMethod:'Online form', entryFrequency:'daily', maxEntries:'',
     purchaseRequired:false, noPurchaseMethod:'Online / AMOE per rules',
+    entryLimitNote:'1/day (confirm in rules)', householdLimit:'1 per household',
+    affidavitRequired:true, amoeConfirmed:true,
     riskLevel:'low', privacyConcern:'medium', timeRequired:'quick',
     eligibleSelf:'unknown',
     scores:{legitimacy:5,prizeValue:5,entryEffort:4,eligibilityClarity:3,privacySafety:3,deadlineUrgency:3,repeatValue:4},
@@ -1029,7 +1055,49 @@ function loadExample(){
 function openSheet(html){ $('#modalRoot').innerHTML=`<div class="modal" onclick="if(event.target===this)closeModal()"><div class="sheet">${html}</div></div>`; document.body.style.overflow='hidden'; }
 function closeModal(){ $('#modalRoot').innerHTML=''; document.body.style.overflow=''; draft=null; entryDraft=null; queueDraft=null; }
 
+/* ---------- auto-expire: roll past-deadline sweeps to "expired" on load ---------- */
+function autoExpireOnLoad(){
+  let n=0;
+  state.opps.forEach(o=>{ if(isExpired(o) && !['expired','skipped','won','not-eligible'].includes(o.status)){ o.status='expired'; o.updatedAt=nowTS(); n++; } });
+  if(n) save();
+}
+
+/* ---------- installable web-app icon + manifest (single-file, generated at runtime) ---------- */
+function setupPWA(){
+  try{
+    function iconDataURL(size){
+      const c=document.createElement('canvas'); c.width=c.height=size; const x=c.getContext('2d');
+      const r=Math.round(size*0.22);
+      x.fillStyle='#0e1116'; x.fillRect(0,0,size,size);
+      // rounded accent square
+      x.fillStyle='#4f9dff';
+      const pad=Math.round(size*0.16), s=size-pad*2;
+      x.beginPath();
+      x.moveTo(pad+r,pad);
+      x.arcTo(pad+s,pad, pad+s,pad+s, r);
+      x.arcTo(pad+s,pad+s, pad,pad+s, r);
+      x.arcTo(pad,pad+s, pad,pad, r);
+      x.arcTo(pad,pad, pad+s,pad, r);
+      x.closePath(); x.fill();
+      // letter
+      x.fillStyle='#06101f';
+      x.font='bold '+Math.round(size*0.5)+'px -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif';
+      x.textAlign='center'; x.textBaseline='middle';
+      x.fillText('S', size/2, size*0.54);
+      return c.toDataURL('image/png');
+    }
+    const icon192=iconDataURL(192), icon512=iconDataURL(512);
+    const at=document.createElement('link'); at.rel='apple-touch-icon'; at.href=icon192; document.head.appendChild(at);
+    const fav=document.createElement('link'); fav.rel='icon'; fav.type='image/png'; fav.href=icon192; document.head.appendChild(fav);
+    const manifest={ name:'Sweepstakes Tracker', short_name:'Sweeps', start_url:'.', scope:'.', display:'standalone', orientation:'portrait', background_color:'#0e1116', theme_color:'#0e1116', icons:[{src:icon192,sizes:'192x192',type:'image/png',purpose:'any maskable'},{src:icon512,sizes:'512x512',type:'image/png',purpose:'any maskable'}] };
+    const url=URL.createObjectURL(new Blob([JSON.stringify(manifest)],{type:'application/manifest+json'}));
+    const ml=document.createElement('link'); ml.rel='manifest'; ml.href=url; document.head.appendChild(ml);
+  }catch(e){ /* icon generation is best-effort; app still works without it */ }
+}
+
 /* ---------- boot ---------- */
+autoExpireOnLoad();
+setupPWA();
 render();
 </script>
 </body>

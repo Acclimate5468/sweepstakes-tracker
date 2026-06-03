@@ -1,0 +1,1036 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#0e1116">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Sweeps">
+<title>Sweepstakes Tracker — Decision-Support</title>
+<style>
+:root{
+  --bg:#0e1116; --surface:#161b22; --surface2:#1c232c; --surface3:#222c38;
+  --border:#2a3340; --border2:#374251;
+  --text:#e6edf3; --muted:#8b97a5; --faint:#5d6b7a;
+  --accent:#4f9dff; --accent-d:#2f6fce;
+  --green:#34d399; --amber:#fbbf24; --red:#f87171; --purple:#a78bfa; --cyan:#22d3ee;
+  --radius:14px; --radius-sm:10px;
+  --safe-b: env(safe-area-inset-bottom, 0px);
+  --safe-t: env(safe-area-inset-top, 0px);
+}
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bg); color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size:16px; line-height:1.45; -webkit-font-smoothing:antialiased;
+  padding-bottom: calc(64px + var(--safe-b));
+}
+button{font-family:inherit; cursor:pointer; color:inherit}
+input,select,textarea{font-family:inherit; font-size:16px}
+h1,h2,h3{margin:0; font-weight:650; letter-spacing:-0.01em}
+a{color:var(--accent); word-break:break-all}
+.hidden{display:none !important}
+
+header{
+  position:sticky; top:0; z-index:30;
+  background:rgba(14,17,22,.85); backdrop-filter:saturate(160%) blur(12px);
+  border-bottom:1px solid var(--border);
+  padding: calc(10px + var(--safe-t)) 16px 10px;
+  display:flex; align-items:center; gap:10px;
+}
+.brand{font-size:18px; font-weight:750; letter-spacing:.01em}
+.brand .dot{color:var(--accent)}
+.head-sub{color:var(--muted); font-size:12.5px; margin-left:2px}
+.head-right{margin-left:auto; display:flex; gap:8px; align-items:center}
+
+#view{padding:14px 14px 20px; max-width:720px; margin:0 auto}
+.section-title{font-size:13px; text-transform:uppercase; letter-spacing:.08em; color:var(--muted); margin:18px 4px 8px; font-weight:700; display:flex; align-items:center; gap:8px}
+.section-title:first-child{margin-top:2px}
+.section-title .ct{margin-left:auto; color:var(--faint); font-weight:700}
+
+.card{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:14px; margin-bottom:12px}
+.card.tight{padding:11px}
+.card.click{cursor:pointer; transition:border-color .15s, transform .04s}
+.card.click:active{transform:scale(.995)}
+.card.click:hover{border-color:var(--border2)}
+.row{display:flex; align-items:center; gap:10px}
+.row.wrap{flex-wrap:wrap}
+.row.top{align-items:flex-start}
+.spacer{flex:1}
+.muted{color:var(--muted)}
+.faint{color:var(--faint)}
+.small{font-size:13px}
+.tiny{font-size:11.5px}
+.b{font-weight:700}
+.center{text-align:center}
+.mono{font-variant-numeric:tabular-nums; font-feature-settings:"tnum"}
+.wrapnice{word-break:break-word; overflow-wrap:anywhere}
+
+.btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:7px;
+  background:var(--surface2); border:1px solid var(--border2); color:var(--text);
+  padding:11px 14px; border-radius:var(--radius-sm); font-size:15px; font-weight:600;
+  transition:transform .04s ease, background .15s, border-color .15s; user-select:none;
+}
+.btn:active{transform:scale(.97)}
+.btn.block{display:flex; width:100%}
+.btn.primary{background:var(--accent); border-color:var(--accent); color:#06101f}
+.btn.green{background:var(--green); border-color:var(--green); color:#04140d}
+.btn.ghost{background:transparent}
+.btn.danger{background:transparent; border-color:#5a2c2c; color:var(--red)}
+.btn.sm{padding:7px 10px; font-size:13px; border-radius:8px; font-weight:600}
+.btn.xs{padding:5px 9px; font-size:12px; border-radius:7px; font-weight:600}
+.btn:disabled{opacity:.4}
+.iconbtn{background:var(--surface2); border:1px solid var(--border2); width:34px; height:34px; border-radius:9px; display:inline-flex; align-items:center; justify-content:center; font-size:16px}
+.fab{position:fixed; right:16px; bottom:calc(72px + var(--safe-b)); z-index:35; width:54px; height:54px; border-radius:50%; background:var(--accent); border:0; color:#06101f; font-size:28px; font-weight:300; box-shadow:0 8px 24px rgba(0,0,0,.45); display:flex; align-items:center; justify-content:center}
+
+.chip{display:inline-flex; align-items:center; gap:6px; padding:6px 11px; border-radius:999px; background:var(--surface2); border:1px solid var(--border2); color:var(--muted); font-size:12.5px; font-weight:650; user-select:none; white-space:nowrap}
+.chip.on{background:var(--accent); border-color:var(--accent); color:#06101f}
+.chip.sm{padding:4px 9px; font-size:11.5px}
+.chips{display:flex; flex-wrap:wrap; gap:8px}
+.chiprow{display:flex; gap:8px; overflow-x:auto; padding:2px 0 6px; -webkit-overflow-scrolling:touch}
+.chiprow::-webkit-scrollbar{display:none}
+
+.tag{display:inline-flex; align-items:center; gap:5px; padding:3px 9px; border-radius:999px; font-size:11.5px; font-weight:700; border:1px solid transparent; white-space:nowrap}
+.tag.low,.tag.green{background:rgba(52,211,153,.13); color:var(--green); border-color:rgba(52,211,153,.25)}
+.tag.medium,.tag.amber{background:rgba(251,191,36,.13); color:var(--amber); border-color:rgba(251,191,36,.25)}
+.tag.high,.tag.red{background:rgba(248,113,113,.13); color:var(--red); border-color:rgba(248,113,113,.28)}
+.tag.blue{background:rgba(79,157,255,.14); color:var(--accent); border-color:rgba(79,157,255,.28)}
+.tag.purple{background:rgba(167,139,250,.14); color:var(--purple); border-color:rgba(167,139,250,.28)}
+.tag.gray{background:var(--surface2); color:var(--muted); border-color:var(--border2)}
+.dotmark{width:8px;height:8px;border-radius:50%}
+
+label.field{display:block; margin-bottom:11px}
+label.field > span{display:block; font-size:12.5px; color:var(--muted); margin-bottom:5px; font-weight:600}
+label.field > span .req{color:var(--accent)}
+input[type=text],input[type=url],input[type=number],input[type=date],input[type=time],input[type=email],select,textarea{
+  width:100%; background:var(--surface2); border:1px solid var(--border2); color:var(--text);
+  padding:11px 12px; border-radius:var(--radius-sm); outline:none;
+}
+input:focus,select:focus,textarea:focus{border-color:var(--accent)}
+textarea{resize:vertical; min-height:60px; line-height:1.4}
+.inline-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+.inline-grid.g3{grid-template-columns:1fr 1fr 1fr}
+.checkline{display:flex; align-items:flex-start; gap:9px; padding:7px 0; cursor:pointer}
+.checkline input{width:20px; height:20px; flex:0 0 auto; margin-top:1px; accent-color:var(--accent)}
+.checkline .t{font-size:13.5px}
+
+.kv{display:flex; justify-content:space-between; gap:12px; padding:7px 0; border-top:1px solid var(--border); font-size:14px}
+.kv:first-child{border-top:0}
+.kv .k{color:var(--muted); flex:0 0 auto}
+.kv .v{text-align:right; word-break:break-word}
+.divider{height:1px; background:var(--border); margin:12px 0}
+.banner{background:linear-gradient(90deg,rgba(79,157,255,.15),rgba(167,139,250,.12)); border:1px solid var(--border2); border-radius:12px; padding:10px 12px; font-size:13px; margin-bottom:12px}
+.flag{background:rgba(248,113,113,.10); border:1px solid #5a2c2c; color:#fca5a5; border-radius:10px; padding:9px 11px; font-size:13px; margin:8px 0}
+.flag.amber{background:rgba(251,191,36,.09); border-color:#5a4a1c; color:#fcd56b}
+.flag.green{background:rgba(52,211,153,.09); border-color:#1f5a45; color:#86efac}
+.note{background:var(--surface2); border-left:3px solid var(--border2); padding:8px 11px; border-radius:8px; color:var(--muted); font-size:13px; margin:8px 0; white-space:pre-wrap}
+
+.empty{text-align:center; color:var(--muted); padding:30px 14px}
+.empty .big{font-size:40px; margin-bottom:8px; opacity:.5}
+
+.scorebar{display:flex; align-items:center; gap:8px; margin:6px 0}
+.scorebar .lab{width:120px; flex:0 0 auto; font-size:12.5px; color:var(--muted)}
+.scorebar .track{flex:1; height:8px; background:var(--surface2); border-radius:6px; overflow:hidden}
+.scorebar .fill{height:100%; background:var(--accent); border-radius:6px}
+.scorebar .val{width:30px; text-align:right; font-size:12.5px; font-weight:700}
+.seg{display:flex; background:var(--surface2); border:1px solid var(--border2); border-radius:10px; padding:3px; gap:3px}
+.seg button{flex:1; border:0; background:transparent; color:var(--muted); font-weight:700; font-size:13px; padding:8px 4px; border-radius:7px}
+.seg button.on{background:var(--accent); color:#06101f}
+.seg.amber button.on{background:var(--amber); color:#1a1402}
+.seg.red button.on{background:var(--red); color:#1a0606}
+.seg.green button.on{background:var(--green); color:#04140d}
+
+#nav{position:fixed; left:0; right:0; bottom:0; z-index:40; display:flex; background:rgba(20,25,32,.94); backdrop-filter:blur(12px); border-top:1px solid var(--border); padding-bottom: var(--safe-b)}
+#nav button{flex:1; background:transparent; border:0; color:var(--muted); padding:9px 4px 8px; font-size:10.5px; font-weight:650; letter-spacing:.01em; display:flex; flex-direction:column; align-items:center; gap:3px; position:relative}
+#nav button .ic{font-size:20px; line-height:1}
+#nav button.on{color:var(--accent)}
+#nav button .badge{position:absolute; top:4px; right:calc(50% - 22px); background:var(--accent); color:#06101f; font-size:9px; font-weight:800; min-width:15px; height:15px; padding:0 3px; border-radius:999px; display:flex; align-items:center; justify-content:center}
+
+.toast{position:fixed; left:50%; transform:translateX(-50%); bottom:calc(80px + var(--safe-b)); background:var(--surface3); border:1px solid var(--border2); color:var(--text); padding:10px 16px; border-radius:999px; font-size:13.5px; font-weight:600; z-index:60; box-shadow:0 8px 24px rgba(0,0,0,.4); opacity:0; transition:opacity .2s, transform .2s; pointer-events:none; max-width:90%; text-align:center}
+.toast.show{opacity:1; transform:translateX(-50%) translateY(-4px)}
+
+.modal{position:fixed; inset:0; z-index:50; background:rgba(0,0,0,.55); display:flex; align-items:flex-end; justify-content:center}
+.modal .sheet{background:var(--surface); border:1px solid var(--border2); border-radius:18px 18px 0 0; width:100%; max-width:720px; max-height:92vh; overflow-y:auto; padding:16px 14px calc(20px + var(--safe-b)); animation:up .2s ease}
+@keyframes up{from{transform:translateY(20px); opacity:.6}to{transform:translateY(0); opacity:1}}
+.sheet h2{font-size:18px; margin-bottom:4px}
+.sheetbar{display:flex; align-items:center; gap:10px; margin-bottom:12px}
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-thumb{background:var(--border2); border-radius:4px}
+.stat{flex:1; background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:10px 8px; text-align:center}
+.stat .n{font-size:22px; font-weight:800}
+.stat .l{font-size:10.5px; color:var(--muted); text-transform:uppercase; letter-spacing:.04em; margin-top:2px}
+.recpill{display:inline-flex; align-items:center; gap:6px; padding:7px 13px; border-radius:10px; font-weight:750; font-size:14px}
+.rec-pursue{background:rgba(52,211,153,.15); color:var(--green); border:1px solid rgba(52,211,153,.3)}
+.rec-maybe{background:rgba(251,191,36,.15); color:var(--amber); border:1px solid rgba(251,191,36,.3)}
+.rec-skip{background:rgba(248,113,113,.13); color:var(--red); border:1px solid rgba(248,113,113,.3)}
+.rec-research{background:rgba(79,157,255,.14); color:var(--accent); border:1px solid rgba(79,157,255,.3)}
+.linkline{font-size:12.5px; color:var(--muted); margin-top:2px}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">Sweeps<span class="dot">·</span>Tracker</div>
+  <div class="head-sub" id="headSub">Decision-support</div>
+  <div class="head-right" id="headRight"></div>
+</header>
+
+<div id="view"></div>
+<button class="fab hidden" id="fab" onclick="fabAction()">+</button>
+
+<nav id="nav">
+  <button data-tab="home" onclick="go('home')"><span class="ic">🏁</span>Home</button>
+  <button data-tab="tracker" onclick="go('tracker')"><span class="ic">📋</span>Tracker</button>
+  <button data-tab="review" onclick="go('review')"><span class="ic">🔍</span>Review</button>
+  <button data-tab="log" onclick="go('log')"><span class="ic">📝</span>Log</button>
+  <button data-tab="settings" onclick="go('settings')"><span class="ic">⚙️</span>More</button>
+</nav>
+
+<div class="toast" id="toast"></div>
+<div id="modalRoot"></div>
+
+<script>
+"use strict";
+/* ============================================================
+   Sweepstakes Tracker — manual-first decision-support system
+   Single file, offline, localStorage-backed.
+   Philosophy: review official rules, score strictly, track entries,
+   prevent duplicates / over-limit entries, avoid scams. No auto-entry.
+   ============================================================ */
+
+/* ---------- utils ---------- */
+const $ = s => document.querySelector(s);
+const view = $('#view');
+function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
+function todayISO(){ const d=new Date(); return isoOf(d); }
+function isoOf(d){ return new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,10); }
+function nowTS(){ return Date.now(); }
+function fmtDate(iso){ if(!iso) return '—'; const d=new Date(iso+'T00:00:00'); if(isNaN(d)) return iso; return d.toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'}); }
+function fmtDateShort(iso){ if(!iso) return '—'; const d=new Date(iso+'T00:00:00'); if(isNaN(d)) return iso; return d.toLocaleDateString(undefined,{month:'short',day:'numeric'}); }
+function fmtClock(ts){ if(!ts) return ''; const d=new Date(ts); let h=d.getHours(), m=d.getMinutes(); const ap=h>=12?'PM':'AM'; h=h%12||12; return h+':'+String(m).padStart(2,'0')+' '+ap; }
+function daysBetween(aIso,bIso){ const a=new Date(aIso+'T00:00:00'), b=new Date(bIso+'T00:00:00'); return Math.round((b-a)/86400000); }
+function daysUntil(iso){ if(!iso) return null; return daysBetween(todayISO(), iso); }
+function addDaysIso(iso,n){ const d=new Date(iso+'T00:00:00'); d.setDate(d.getDate()+n); return isoOf(d); }
+function addMonthsIso(iso,n){ const d=new Date(iso+'T00:00:00'); d.setMonth(d.getMonth()+n); return isoOf(d); }
+function money(n){ if(n==null||n===''||isNaN(n)) return '—'; const v=Number(n); return '$'+v.toLocaleString(undefined,{maximumFractionDigits:0}); }
+function toast(msg){ const t=$('#toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('show'),1900); }
+function clamp(n,a,b){ return Math.max(a,Math.min(b,n)); }
+function pick(label){ return label; }
+
+/* ---------- vocab ---------- */
+const FREQ = {'one-time':'One-time','daily':'Daily','weekly':'Weekly','monthly':'Monthly','mail-in':'Mail-in / varies'};
+const METHODS = ['Online form','Email','Social media','Mail-in','In-store / QR','Phone','Other'];
+const RISK = ['low','medium','high'];
+const CONCERN = ['low','medium','high'];
+const TIME = ['quick','medium','annoying'];
+const STATUSES = {
+  researching:{label:'Researching', tag:'blue'},
+  active:{label:'Active', tag:'green'},
+  entered:{label:'Entered', tag:'green'},
+  'daily-repeat':{label:'Daily repeat', tag:'purple'},
+  'weekly-repeat':{label:'Weekly repeat', tag:'purple'},
+  maybe:{label:'Maybe', tag:'amber'},
+  skipped:{label:'Skipped', tag:'gray'},
+  expired:{label:'Expired', tag:'gray'},
+  'not-eligible':{label:'Not eligible', tag:'gray'},
+  won:{label:'Won', tag:'green'},
+  'dq-risk':{label:'Disqualified risk', tag:'red'},
+};
+const RECS = {
+  pursue:{label:'Pursue', cls:'rec-pursue', icon:'✅'},
+  maybe:{label:'Maybe', cls:'rec-maybe', icon:'🤔'},
+  skip:{label:'Skip', cls:'rec-skip', icon:'⛔️'},
+  research:{label:'Research more', cls:'rec-research', icon:'🔬'},
+};
+const SCORE_CATS = [
+  ['legitimacy','Legitimacy'],
+  ['prizeValue','Prize value'],
+  ['entryEffort','Entry effort (easy=high)'],
+  ['eligibilityClarity','Eligibility clarity'],
+  ['privacySafety','Privacy safety'],
+  ['deadlineUrgency','Deadline urgency'],
+  ['repeatValue','Repeat-entry value'],
+];
+const RED_FLAGS = [
+  ['noSponsor','No clear / identifiable sponsor'],
+  ['noRules','No official rules available'],
+  ['payment','Requires payment to enter'],
+  ['creditCard','Requires credit card info'],
+  ['ssn','Requires SSN / sensitive info before winning'],
+  ['sketchyApp','Requires downloading an unknown app'],
+  ['unrealistic','Unrealistic prize with vague terms'],
+  ['alreadyWon','Uses “you already won” language'],
+  ['surveys','Pushes endless surveys / offers'],
+  ['referrals','Requires referrals / social spam'],
+  ['domainMismatch','Domain does not match the sponsor'],
+  ['farm','Looks like a sweepstakes farm, not official'],
+  ['optins','Confusing opt-ins / unclear unsubscribe'],
+  ['countdown','Deceptive countdown / pressure tactics'],
+];
+
+/* ---------- state ---------- */
+const LS_KEY='swt_state_v1';
+let memoryOnly=false;
+function newOpp(){
+  return {
+    id:uid(), name:'', sponsor:'', sponsorVerified:false, officialUrl:'', rulesUrl:'', hasRules:false,
+    prize:'', arv:'', deadline:'', eligibility:'', locationRestrict:'', ageRestrict:'',
+    entryMethod:'Online form', entryFrequency:'one-time', maxEntries:'',
+    purchaseRequired:false, noPurchaseMethod:'',
+    riskLevel:'medium', privacyConcern:'medium', timeRequired:'medium',
+    eligibleSelf:'unknown', // yes | no | unknown
+    redFlags:[],
+    scores:{legitimacy:3,prizeValue:3,entryEffort:3,eligibilityClarity:3,privacySafety:3,deadlineUrgency:3,repeatValue:1},
+    recommendation:'', // user-chosen; '' => use suggestion
+    status:'researching', notes:'',
+    emailUsed:'', createdAt:nowTS(), updatedAt:nowTS()
+  };
+}
+function defaultState(){
+  return { v:1, tab:'home', settings:{defaultEmail:'', strictMode:true}, opps:[], entries:[], queue:[], trackerFilter:'all' };
+}
+function save(){ try{ localStorage.setItem(LS_KEY, JSON.stringify(state)); }catch(e){ memoryOnly=true; } }
+function loadState(){
+  try{ const r=localStorage.getItem(LS_KEY); if(r){ return migrate(JSON.parse(r)); } }catch(e){ memoryOnly=true; }
+  return defaultState();
+}
+function migrate(s){
+  const d=defaultState();
+  s.settings=Object.assign({}, d.settings, s.settings||{});
+  if(!Array.isArray(s.opps)) s.opps=[];
+  if(!Array.isArray(s.entries)) s.entries=[];
+  if(!Array.isArray(s.queue)) s.queue=[];
+  if(!s.trackerFilter) s.trackerFilter='all';
+  s.opps.forEach(o=>{ const base=newOpp(); for(const k in base){ if(o[k]===undefined) o[k]=base[k]; } if(!o.scores) o.scores=base.scores; if(!Array.isArray(o.redFlags)) o.redFlags=[]; });
+  return s;
+}
+let state = loadState();
+
+/* ---------- derived: entries / eligibility ---------- */
+function entriesFor(oppId){ return state.entries.filter(e=>e.oppId===oppId).sort((a,b)=>a.ts-b.ts); }
+function totalEntriesFor(oppId){ return entriesFor(oppId).reduce((n,e)=>n+(Number(e.count)||0),0); }
+function lastEntry(oppId){ const es=entriesFor(oppId); return es.length?es[es.length-1]:null; }
+function isExpired(o){ return o.deadline && daysUntil(o.deadline)<0; }
+
+// Next eligible entry date based on frequency + last entry.
+function nextEligible(o){
+  const last=lastEntry(o.id);
+  if(!last) return {state:'never'};                  // never entered yet
+  const f=o.entryFrequency;
+  if(f==='one-time') return {state:'done'};          // single entry already used
+  if(f==='mail-in'||!FREQ[f]) return {state:'manual'};
+  let next;
+  if(f==='daily') next=addDaysIso(last.dateISO,1);
+  else if(f==='weekly') next=addDaysIso(last.dateISO,7);
+  else if(f==='monthly') next=addMonthsIso(last.dateISO,1);
+  return {state:'date', iso:next, ready: daysBetween(todayISO(),next)<=0};
+}
+// Can the user enter this opportunity today?
+function canEnterToday(o){
+  if(isExpired(o)) return false;
+  if(['skipped','expired','not-eligible','won','dq-risk'].includes(o.status)) return false;
+  if(o.eligibleSelf==='no') return false;
+  if(o.maxEntries && totalEntriesFor(o.id)>=Number(o.maxEntries)) return false;
+  const ne=nextEligible(o);
+  if(ne.state==='never') return true;
+  if(ne.state==='done') return false;
+  if(ne.state==='manual') return true;
+  return !!ne.ready;
+}
+
+/* ---------- scoring + recommendation engine ---------- */
+function scoreTotal(o){ return SCORE_CATS.reduce((n,[k])=>n+(Number(o.scores[k])||0),0); } // 0..35
+function scorePct(o){ return Math.round(scoreTotal(o)/35*100); }
+
+// Strict, override-driven suggestion. Returns {rec, reasons[], hard[], research[]}.
+function suggest(o){
+  const hard=[], research=[], soft=[];
+  const fl=o.redFlags||[];
+  // ---- hard skips ----
+  if(o.eligibleSelf==='no') hard.push('You are not eligible');
+  if(o.purchaseRequired) hard.push('Purchase / paid entry required');
+  if(fl.includes('payment')) hard.push('Requires payment to enter');
+  if(fl.includes('creditCard')) hard.push('Requires credit card');
+  if(fl.includes('ssn')) hard.push('Requires SSN / sensitive info before winning');
+  if(fl.includes('noSponsor') || !o.sponsor.trim()) hard.push('No clear sponsor');
+  if(fl.includes('unrealistic')) hard.push('Unrealistic prize with vague terms');
+  if(fl.includes('alreadyWon')) hard.push('“You already won” language');
+  if(fl.includes('farm')) hard.push('Looks like a sweepstakes farm');
+  if(fl.includes('sketchyApp')) hard.push('Requires an unknown app download');
+  // ---- research triggers ----
+  if(fl.includes('noRules') || (!o.rulesUrl.trim() && !o.hasRules)) research.push('Official rules not confirmed');
+  if(!o.deadline) research.push('Deadline unknown');
+  if(o.eligibleSelf==='unknown') research.push('Eligibility unconfirmed');
+  if(!o.sponsorVerified) research.push('Sponsor not verified');
+  // ---- soft cautions ----
+  if(o.privacyConcern==='high') soft.push('High privacy concern');
+  if(o.timeRequired==='annoying') soft.push('Entry process is annoying');
+  if(o.riskLevel==='medium') soft.push('Medium risk — proceed with caution');
+
+  const score=scoreTotal(o);
+  let rec, reasons;
+  if(hard.length){ rec='skip'; reasons=hard; }
+  else if(o.riskLevel==='high'){
+    // high risk only survives if prize is genuinely big AND sponsor verified
+    if(o.sponsorVerified && Number(o.arv)>=5000 && research.length===0){ rec='maybe'; reasons=['High risk but verified sponsor & high-value prize'].concat(soft); }
+    else { rec='skip'; reasons=['High risk'].concat(research); }
+  }
+  else if(research.length>=2 || (research.length>=1 && score<14)){ rec='research'; reasons=research; }
+  else if(score>=24){ rec='pursue'; reasons=['Strong score, low blockers'].concat(soft); }
+  else if(score>=15){ rec='maybe'; reasons=['Decent but not compelling'].concat(soft).concat(research); }
+  else if(research.length){ rec='research'; reasons=research; }
+  else { rec='maybe'; reasons=['Weak score'].concat(soft); }
+  return {rec, reasons:reasons.filter(Boolean), hard, research, soft, score};
+}
+function effectiveRec(o){ return o.recommendation || suggest(o).rec; }
+
+/* ---------- routing ---------- */
+function go(tab){ state.tab=tab; save(); render(); window.scrollTo(0,0); }
+function render(){
+  document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('on', b.dataset.tab===state.tab));
+  updateNavBadges();
+  const fab=$('#fab');
+  if(state.tab==='tracker'||state.tab==='home'){ fab.classList.remove('hidden'); fab.textContent='+'; }
+  else if(state.tab==='review'){ fab.classList.remove('hidden'); fab.textContent='+'; }
+  else if(state.tab==='log'){ fab.classList.add('hidden'); }
+  else fab.classList.add('hidden');
+  ({home:renderHome, tracker:renderTracker, review:renderReview, log:renderLog, settings:renderSettings}[state.tab]||renderHome)();
+}
+function fabAction(){
+  if(state.tab==='review') openQueueEdit(null);
+  else openOppEdit(null);
+}
+function updateNavBadges(){
+  const needReview = state.queue.filter(q=>q.reviewStatus!=='done').length + state.opps.filter(o=>o.status==='researching').length;
+  setBadge('review', needReview);
+  const todo = state.opps.filter(canEnterToday).length;
+  setBadge('home', todo);
+}
+function setBadge(tab,n){
+  const btn=document.querySelector('#nav button[data-tab="'+tab+'"]'); if(!btn) return;
+  let b=btn.querySelector('.badge'); if(n>0){ if(!b){ b=document.createElement('span'); b.className='badge'; btn.appendChild(b);} b.textContent=n>99?'99+':n; } else if(b){ b.remove(); }
+}
+
+/* ============================================================
+   HOME — dashboard / what to do next
+   ============================================================ */
+function renderHome(){
+  const opps=state.opps;
+  const enterNow=opps.filter(canEnterToday);
+  const soon=opps.filter(o=>!isExpired(o) && !['skipped','expired','not-eligible','won'].includes(o.status) && o.deadline && daysUntil(o.deadline)>=0 && daysUntil(o.deadline)<=7)
+                 .sort((a,b)=>daysUntil(a.deadline)-daysUntil(b.deadline));
+  const needReview=opps.filter(o=>o.status==='researching').length + state.queue.filter(q=>q.reviewStatus!=='done').length;
+  const expiredOpen=opps.filter(o=>isExpired(o) && !['expired','skipped','won','not-eligible'].includes(o.status));
+
+  let h='';
+  h+=`<div class="banner"><span class="b">Manual-first.</span> This tool helps you decide <i>which</i> sweepstakes are worth it and tracks what you entered. It never auto-enters — you always read the official rules and submit yourself.</div>`;
+
+  // stats
+  const active=opps.filter(o=>['active','daily-repeat','weekly-repeat','entered','maybe'].includes(o.status)).length;
+  const won=opps.filter(o=>o.status==='won').length;
+  h+=`<div class="row" style="gap:8px;margin-bottom:4px">
+    <div class="stat"><div class="n">${opps.length}</div><div class="l">Tracked</div></div>
+    <div class="stat"><div class="n" style="color:var(--green)">${enterNow.length}</div><div class="l">Enter now</div></div>
+    <div class="stat"><div class="n" style="color:var(--accent)">${needReview}</div><div class="l">To review</div></div>
+    <div class="stat"><div class="n" style="color:var(--amber)">${won}</div><div class="l">Won</div></div>
+  </div>`;
+
+  if(expiredOpen.length){
+    h+=`<div class="flag amber" style="margin-top:12px">⏰ ${expiredOpen.length} tracked ${expiredOpen.length===1?'sweepstakes has':'sweepstakes have'} passed their deadline. <button class="btn xs" style="margin-left:6px" onclick="markExpired()">Mark expired</button></div>`;
+  }
+
+  // Enter today
+  h+=`<div class="section-title">✅ Enter today<span class="ct">${enterNow.length}</span></div>`;
+  if(!enterNow.length) h+=`<div class="card tight muted small center">Nothing to enter right now. Eligible repeat-entries and new active sweeps show up here.</div>`;
+  else h+=enterNow.map(o=>oppRow(o,'enter')).join('');
+
+  // Deadlines soon
+  h+=`<div class="section-title">⏳ Deadlines within 7 days<span class="ct">${soon.length}</span></div>`;
+  if(!soon.length) h+=`<div class="card tight muted small center">No upcoming deadlines.</div>`;
+  else h+=soon.map(o=>oppRow(o,'deadline')).join('');
+
+  // Needs review
+  h+=`<div class="section-title">🔍 Needs review<span class="ct">${needReview}</span></div>`;
+  if(!needReview) h+=`<div class="card tight muted small center">Review queue is clear.</div>`;
+  else h+=`<div class="card click" onclick="go('review')"><div class="row"><div><div class="b">${needReview} item${needReview===1?'':'s'} awaiting review</div><div class="small muted">Score them, check the rules, decide pursue / skip.</div></div><div class="spacer"></div><div class="tag blue">Open →</div></div></div>`;
+
+  view.innerHTML=h;
+}
+function markExpired(){
+  let n=0; state.opps.forEach(o=>{ if(isExpired(o) && !['expired','skipped','won','not-eligible'].includes(o.status)){ o.status='expired'; o.updatedAt=nowTS(); n++; } });
+  save(); render(); toast(n+' marked expired');
+}
+function oppRow(o, ctx){
+  const st=STATUSES[o.status]||{label:o.status,tag:'gray'};
+  const rec=effectiveRec(o);
+  const ne=nextEligible(o);
+  let sub='';
+  if(ctx==='enter'){
+    if(ne.state==='never') sub='Not yet entered';
+    else if(ne.state==='date') sub='Repeat available today';
+    else sub=FREQ[o.entryFrequency]||o.entryFrequency;
+    const tot=totalEntriesFor(o.id); if(tot) sub+=' · '+tot+' entered'+(o.maxEntries?'/'+o.maxEntries:'');
+  } else if(ctx==='deadline'){
+    const d=daysUntil(o.deadline); sub=(d===0?'Ends today':d===1?'Ends tomorrow':'Ends in '+d+' days')+' · '+fmtDateShort(o.deadline);
+  } else {
+    sub=(o.sponsor||'No sponsor')+' · '+(money(o.arv));
+  }
+  let action='';
+  if(ctx==='enter') action=`<button class="btn green sm" onclick="event.stopPropagation();openLogEntry('${o.id}')">Log entry</button>`;
+  return `<div class="card tight click" onclick="openOppView('${o.id}')">
+    <div class="row top">
+      <div style="min-width:0;flex:1">
+        <div class="b wrapnice">${esc(o.name||'Untitled')}</div>
+        <div class="small muted wrapnice">${esc(sub)}</div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex:0 0 auto">
+        <span class="tag ${RISK.includes(o.riskLevel)?o.riskLevel:'gray'}">${o.riskLevel} risk</span>
+        ${action||`<span class="tag ${st.tag}">${st.label}</span>`}
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ============================================================
+   TRACKER — all opportunities, filterable
+   ============================================================ */
+const TRACKER_FILTERS=[
+  ['all','All'],['enterNow','Enter now'],['active','Active'],['researching','Researching'],
+  ['maybe','Maybe'],['daily-repeat','Daily'],['weekly-repeat','Weekly'],['entered','Entered'],
+  ['won','Won'],['skipped','Skipped'],['expired','Expired'],['not-eligible','Not eligible']
+];
+function renderTracker(){
+  let h='';
+  h+=`<div class="chiprow">`+TRACKER_FILTERS.map(([k,l])=>{
+    let n;
+    if(k==='all') n=state.opps.length;
+    else if(k==='enterNow') n=state.opps.filter(canEnterToday).length;
+    else n=state.opps.filter(o=>o.status===k).length;
+    return `<button class="chip ${state.trackerFilter===k?'on':''}" onclick="setTrackerFilter('${k}')">${l} ${n?`<span class="${state.trackerFilter===k?'':'faint'}">${n}</span>`:''}</button>`;
+  }).join('')+`</div>`;
+
+  let list=state.opps.slice();
+  const f=state.trackerFilter;
+  if(f==='enterNow') list=list.filter(canEnterToday);
+  else if(f!=='all') list=list.filter(o=>o.status===f);
+  list.sort((a,b)=>{
+    const da=a.deadline?daysUntil(a.deadline):9999, db=b.deadline?daysUntil(b.deadline):9999;
+    return (da<0?9000+da:da)-(db<0?9000+db:db) || b.updatedAt-a.updatedAt;
+  });
+
+  if(!state.opps.length){
+    h+=`<div class="empty"><div class="big">📋</div><div class="b">No sweepstakes tracked yet</div>
+      <div class="small muted" style="margin:6px 0 14px">Add one to review the rules, score it, and track entries.</div>
+      <button class="btn primary" onclick="openOppEdit(null)">+ Add sweepstakes</button>
+      <div style="margin-top:10px"><button class="btn ghost sm" onclick="loadExample()">Load the Liquid Death example</button></div></div>`;
+    view.innerHTML=h; return;
+  }
+  if(!list.length) h+=`<div class="card tight muted small center">Nothing matches this filter.</div>`;
+  else h+=list.map(o=>trackerCard(o)).join('');
+  view.innerHTML=h;
+}
+function setTrackerFilter(k){ state.trackerFilter=k; save(); render(); }
+function trackerCard(o){
+  const st=STATUSES[o.status]||{label:o.status,tag:'gray'};
+  const rec=RECS[effectiveRec(o)];
+  const exp=isExpired(o);
+  const d=o.deadline?daysUntil(o.deadline):null;
+  let dl = !o.deadline ? '<span class="faint">No deadline</span>' :
+    exp ? `<span class="tag red">Expired ${fmtDateShort(o.deadline)}</span>` :
+    `<span class="${d<=3?'tag amber':'muted'}">${d===0?'Ends today':d===1?'Ends tomorrow':d+'d left'}</span>`;
+  const tot=totalEntriesFor(o.id);
+  const can=canEnterToday(o);
+  return `<div class="card click" onclick="openOppView('${o.id}')">
+    <div class="row top">
+      <div style="min-width:0;flex:1">
+        <div class="b wrapnice" style="font-size:15.5px">${esc(o.name||'Untitled')}</div>
+        <div class="small muted wrapnice">${esc(o.sponsor||'No sponsor')}${o.sponsorVerified?' ✓':''} · ${money(o.arv)}</div>
+      </div>
+      <div class="recpill ${rec.cls}" style="font-size:12px;padding:5px 9px">${rec.icon} ${rec.label}</div>
+    </div>
+    <div class="row wrap" style="gap:7px;margin-top:9px">
+      <span class="tag ${st.tag}">${st.label}</span>
+      <span class="tag ${o.riskLevel}">${o.riskLevel} risk</span>
+      <span class="tag gray">${FREQ[o.entryFrequency]||o.entryFrequency}</span>
+      ${dl}
+      ${tot?`<span class="tag gray">${tot}${o.maxEntries?'/'+o.maxEntries:''} entered</span>`:''}
+      ${can?`<span class="tag green">Enter now</span>`:''}
+    </div>
+  </div>`;
+}
+
+/* ============================================================
+   OPPORTUNITY — view detail
+   ============================================================ */
+function openOppView(id){
+  const o=state.opps.find(x=>x.id===id); if(!o) return;
+  const s=suggest(o);
+  const rec=RECS[effectiveRec(o)];
+  const st=STATUSES[o.status]||{label:o.status,tag:'gray'};
+  const ne=nextEligible(o);
+  const es=entriesFor(o.id);
+  let neTxt;
+  if(ne.state==='never') neTxt='Not entered yet';
+  else if(ne.state==='done') neTxt='One-time — already entered';
+  else if(ne.state==='manual') neTxt='Manual / mail-in — check rules';
+  else neTxt=ne.ready?'Eligible to re-enter now':'Next eligible '+fmtDate(ne.iso);
+
+  let h='';
+  h+=`<div class="sheetbar"><button class="iconbtn" onclick="closeModal()">✕</button>
+      <h2 style="flex:1" class="wrapnice">${esc(o.name||'Untitled')}</h2></div>`;
+
+  h+=`<div class="row wrap" style="gap:7px;margin-bottom:12px">
+      <div class="recpill ${rec.cls}">${rec.icon} ${rec.label}</div>
+      <span class="tag ${st.tag}">${st.label}</span>
+      <span class="tag ${o.riskLevel}">${o.riskLevel} risk</span>
+      <span class="tag ${o.privacyConcern}">privacy ${o.privacyConcern}</span>
+    </div>`;
+
+  // suggestion box
+  if(s.rec!==effectiveRec(o) || !o.recommendation){
+    h+=`<div class="flag ${s.rec==='skip'?'':s.rec==='pursue'?'green':'amber'}" style="margin-bottom:12px">
+      <span class="b">Engine suggests: ${RECS[s.rec].label}</span> (score ${s.score}/35)
+      ${s.reasons.length?`<div class="small" style="margin-top:4px">• ${s.reasons.slice(0,4).map(esc).join('<br>• ')}</div>`:''}
+    </div>`;
+  }
+
+  if(canEnterToday(o)) h+=`<button class="btn green block" onclick="openLogEntry('${o.id}')" style="margin-bottom:12px">📝 Log an entry now</button>`;
+
+  // key facts
+  h+=`<div class="card">`;
+  const facts=[
+    ['Sponsor',(o.sponsor||'—')+(o.sponsorVerified?' ✓ verified':'')],
+    ['Prize',o.prize||'—'],
+    ['Approx. value (ARV)',money(o.arv)],
+    ['Deadline',o.deadline?fmtDate(o.deadline)+(isExpired(o)?' (expired)':daysUntil(o.deadline)<=7?' · '+daysUntil(o.deadline)+'d':''):'—'],
+    ['Eligibility',o.eligibility||'—'],
+    ['Location limits',o.locationRestrict||'—'],
+    ['Age limits',o.ageRestrict||'—'],
+    ['You eligible?',o.eligibleSelf],
+    ['Entry method',o.entryMethod],
+    ['Frequency',FREQ[o.entryFrequency]||o.entryFrequency],
+    ['Max entries',o.maxEntries||'—'],
+    ['Purchase required?',o.purchaseRequired?'⚠️ Yes':'No'],
+    ['No-purchase method',o.noPurchaseMethod||'—'],
+    ['Time required',o.timeRequired],
+  ];
+  h+=facts.map(([k,v])=>`<div class="kv"><span class="k">${k}</span><span class="v wrapnice">${esc(v)}</span></div>`).join('');
+  h+=`</div>`;
+
+  // links
+  if(o.officialUrl||o.rulesUrl){
+    h+=`<div class="card">`;
+    if(o.officialUrl) h+=`<div class="kv"><span class="k">Official URL</span><span class="v"><a href="${esc(o.officialUrl)}" target="_blank" rel="noopener">Open ↗</a></span></div>`;
+    if(o.rulesUrl) h+=`<div class="kv"><span class="k">Official rules</span><span class="v"><a href="${esc(o.rulesUrl)}" target="_blank" rel="noopener">Open ↗</a></span></div>`;
+    h+=`</div>`;
+  }
+
+  // red flags
+  if(o.redFlags && o.redFlags.length){
+    h+=`<div class="flag"><span class="b">⚠️ Red flags noted:</span><div class="small" style="margin-top:4px">${o.redFlags.map(f=>{const r=RED_FLAGS.find(x=>x[0]===f); return '• '+esc(r?r[1]:f);}).join('<br>')}</div></div>`;
+  }
+
+  // score breakdown
+  h+=`<div class="section-title" style="margin-left:0">Score breakdown<span class="ct">${scoreTotal(o)}/35</span></div><div class="card">`;
+  SCORE_CATS.forEach(([k,l])=>{ const v=Number(o.scores[k])||0; h+=`<div class="scorebar"><span class="lab">${l}</span><span class="track"><span class="fill" style="width:${v/5*100}%;background:${v>=4?'var(--green)':v>=2?'var(--accent)':'var(--amber)'}"></span></span><span class="val">${v}</span></div>`; });
+  h+=`</div>`;
+
+  // entry history
+  h+=`<div class="section-title" style="margin-left:0">Entry log<span class="ct">${es.length}</span></div>`;
+  if(!es.length) h+=`<div class="card tight muted small center">No entries logged. Logging entries prevents accidental duplicates and tracks limits.</div>`;
+  else h+=`<div class="card">`+es.slice().reverse().map(e=>`<div class="kv"><span class="k">${fmtDate(e.dateISO)} ${fmtClock(e.ts)}</span><span class="v">${e.count} entr${e.count==1?'y':'ies'} · ${esc(e.method||'—')}${e.confirmation?' · #'+esc(e.confirmation):''}${e.ruleConcern?' ⚠️':''}</span></div>`).join('')+`<div class="kv"><span class="k b">Total</span><span class="v b">${totalEntriesFor(o.id)}${o.maxEntries?' / '+o.maxEntries:''}</span></div><div class="kv"><span class="k">Next eligible</span><span class="v">${esc(neTxt)}</span></div></div>`;
+
+  if(o.notes) h+=`<div class="section-title" style="margin-left:0">Notes</div><div class="note">${esc(o.notes)}</div>`;
+
+  // status changer
+  h+=`<div class="section-title" style="margin-left:0">Set status</div><div class="chips" style="margin-bottom:14px">`+
+     Object.entries(STATUSES).map(([k,v])=>`<button class="chip sm ${o.status===k?'on':''}" onclick="setOppStatus('${o.id}','${k}')">${v.label}</button>`).join('')+`</div>`;
+
+  h+=`<div class="row" style="gap:10px"><button class="btn block" onclick="openOppEdit('${o.id}')">✏️ Edit / re-review</button>
+      <button class="btn danger" onclick="deleteOpp('${o.id}')">Delete</button></div>`;
+
+  openSheet(h);
+}
+function setOppStatus(id,st){ const o=state.opps.find(x=>x.id===id); if(!o) return; o.status=st; o.updatedAt=nowTS(); save(); openOppView(id); toast('Status: '+(STATUSES[st]||{}).label); render(); }
+function deleteOpp(id){
+  const o=state.opps.find(x=>x.id===id); if(!o) return;
+  if(!confirm('Delete "'+(o.name||'this sweepstakes')+'" and its entry log?')) return;
+  state.opps=state.opps.filter(x=>x.id!==id);
+  state.entries=state.entries.filter(e=>e.oppId!==id);
+  save(); closeModal(); render(); toast('Deleted');
+}
+
+/* ============================================================
+   OPPORTUNITY — add / edit (the review workflow)
+   ============================================================ */
+let draft=null;
+function openOppEdit(id){
+  draft = id ? JSON.parse(JSON.stringify(state.opps.find(x=>x.id===id))) : newOpp();
+  if(!id && state.settings.defaultEmail) draft.emailUsed=state.settings.defaultEmail;
+  renderOppEdit(!id);
+}
+function renderOppEdit(isNew){
+  const o=draft;
+  const s=suggest(o);
+  let h='';
+  h+=`<div class="sheetbar"><button class="iconbtn" onclick="closeModal()">✕</button>
+      <h2 style="flex:1">${isNew?'New review':'Edit review'}</h2>
+      <button class="btn primary sm" onclick="saveOpp()">Save</button></div>`;
+
+  h+=`<div class="flag ${s.rec==='skip'?'':s.rec==='pursue'?'green':'amber'}" style="margin-bottom:14px">
+      <span class="b">Live suggestion: ${RECS[s.rec].icon} ${RECS[s.rec].label}</span> · score ${s.score}/35
+      ${s.reasons.length?`<div class="small" style="margin-top:3px">${s.reasons.slice(0,3).map(esc).join(' · ')}</div>`:''}</div>`;
+
+  // --- identity ---
+  h+=`<div class="section-title" style="margin-left:0">Identity</div><div class="card">`;
+  h+=fText('name','Sweepstakes name','req');
+  h+=fText('sponsor','Sponsor / company');
+  h+=fCheck('sponsorVerified','I verified the sponsor is legitimate');
+  h+=fText('officialUrl','Official URL','','url');
+  h+=fText('rulesUrl','Official rules URL / PDF','','url');
+  h+=fCheck('hasRules','Official rules are available & readable');
+  h+=`</div>`;
+
+  // --- prize & deadline ---
+  h+=`<div class="section-title" style="margin-left:0">Prize & timing</div><div class="card">`;
+  h+=fText('prize','Prize');
+  h+=`<div class="inline-grid">`+fNum('arv','Approx. value (ARV $)')+fDate('deadline','Deadline')+`</div>`;
+  h+=`</div>`;
+
+  // --- eligibility ---
+  h+=`<div class="section-title" style="margin-left:0">Eligibility</div><div class="card">`;
+  h+=fArea('eligibility','Eligibility summary');
+  h+=`<div class="inline-grid">`+fText('locationRestrict','Location limits')+fText('ageRestrict','Age limits')+`</div>`;
+  h+=`<label class="field"><span>Are YOU eligible?</span><div class="seg" id="seg_elig">`+
+     ['yes','unknown','no'].map(v=>`<button class="${o.eligibleSelf===v?'on':''}" onclick="setDraft('eligibleSelf','${v}')">${v}</button>`).join('')+`</div></label>`;
+  h+=`</div>`;
+
+  // --- entry mechanics ---
+  h+=`<div class="section-title" style="margin-left:0">Entry mechanics</div><div class="card">`;
+  h+=`<div class="inline-grid">`+fSelect('entryMethod','Entry method',METHODS)+fSelect('entryFrequency','Frequency',Object.keys(FREQ),k=>FREQ[k])+`</div>`;
+  h+=fNum('maxEntries','Max entries allowed (total)');
+  h+=fCheck('purchaseRequired','Purchase required to enter (usually a red flag)');
+  h+=fText('noPurchaseMethod','No-purchase / AMOE method');
+  h+=`</div>`;
+
+  // --- risk review ---
+  h+=`<div class="section-title" style="margin-left:0">Risk review</div><div class="card">`;
+  h+=fSeg('riskLevel','Risk level',RISK,{low:'green',medium:'amber',high:'red'});
+  h+=fSeg('privacyConcern','Privacy concern',CONCERN,{low:'green',medium:'amber',high:'red'});
+  h+=fSeg('timeRequired','Time required',TIME,{quick:'green',medium:'amber',annoying:'red'});
+  h+=`<div style="margin-top:6px"><span style="font-size:12.5px;color:var(--muted);font-weight:600">Red flags (check any that apply)</span>`;
+  h+=RED_FLAGS.map(([k,l])=>`<label class="checkline"><input type="checkbox" ${o.redFlags.includes(k)?'checked':''} onchange="toggleFlag('${k}',this.checked)"><span class="t">${l}</span></label>`).join('');
+  h+=`</div></div>`;
+
+  // --- scoring ---
+  h+=`<div class="section-title" style="margin-left:0">Score (0–5 each)<span class="ct">${scoreTotal(o)}/35</span></div><div class="card">`;
+  SCORE_CATS.forEach(([k,l])=>{
+    h+=`<div style="margin-bottom:10px"><div class="row"><span class="small" style="flex:1">${l}</span><span class="b mono">${o.scores[k]}</span></div>
+        <input type="range" min="0" max="5" step="1" value="${o.scores[k]}" style="width:100%;accent-color:var(--accent)" oninput="setScore('${k}',this.value)"></div>`;
+  });
+  h+=`</div>`;
+
+  // --- decision ---
+  h+=`<div class="section-title" style="margin-left:0">Decision</div><div class="card">`;
+  h+=`<label class="field"><span>Recommendation (blank = use engine suggestion: ${RECS[s.rec].label})</span><div class="chips">`+
+     [['','Use suggestion'],...Object.entries(RECS).map(([k,v])=>[k,v.label])].map(([k,l])=>`<button class="chip ${o.recommendation===k?'on':''}" onclick="setDraft('recommendation','${k}')">${l}</button>`).join('')+`</div></label>`;
+  h+=`<label class="field"><span>Tracker status</span><div class="chips">`+
+     Object.entries(STATUSES).map(([k,v])=>`<button class="chip sm ${o.status===k?'on':''}" onclick="setDraft('status','${k}')">${v.label}</button>`).join('')+`</div></label>`;
+  h+=fArea('notes','Notes (entry limits, household limits, affidavits, AMOE details…)');
+  h+=`</div>`;
+
+  h+=`<button class="btn primary block" onclick="saveOpp()" style="margin-top:4px">${isNew?'Save to tracker':'Save changes'}</button>`;
+  if(!isNew) h+=`<button class="btn ghost danger block" onclick="deleteOpp('${o.id}')" style="margin-top:10px">Delete</button>`;
+
+  openSheet(h);
+}
+// draft field helpers (read DOM live so we don't re-render on every keystroke)
+function fText(k,label,req,type){ const t=type||'text'; return `<label class="field"><span>${label}${req?' <span class="req">*</span>':''}</span><input type="${t}" value="${esc(draft[k])}" oninput="draft.${k}=this.value;refreshSuggest()"></label>`; }
+function fNum(k,label){ return `<label class="field"><span>${label}</span><input type="number" inputmode="decimal" value="${esc(draft[k])}" oninput="draft.${k}=this.value;refreshSuggest()"></label>`; }
+function fDate(k,label){ return `<label class="field"><span>${label}</span><input type="date" value="${esc(draft[k])}" oninput="draft.${k}=this.value;refreshSuggest()"></label>`; }
+function fArea(k,label){ return `<label class="field"><span>${label}</span><textarea oninput="draft.${k}=this.value">${esc(draft[k])}</textarea></label>`; }
+function fCheck(k,label){ return `<label class="checkline"><input type="checkbox" ${draft[k]?'checked':''} onchange="draft.${k}=this.checked;refreshSuggest()"><span class="t">${label}</span></label>`; }
+function fSelect(k,label,opts,fmt){ return `<label class="field"><span>${label}</span><select onchange="draft.${k}=this.value;refreshSuggest()">`+opts.map(v=>`<option value="${esc(v)}" ${draft[k]===v?'selected':''}>${esc(fmt?fmt(v):v)}</option>`).join('')+`</select></label>`; }
+function fSeg(k,label,opts,colors){ return `<label class="field"><span>${label}</span><div class="seg ${colors&&colors[draft[k]]?colors[draft[k]]:''}">`+opts.map(v=>`<button class="${draft[k]===v?'on':''}" onclick="setDraft('${k}','${v}')">${v}</button>`).join('')+`</div></label>`; }
+function setDraft(k,v){ draft[k]=v; renderOppEdit(!state.opps.find(x=>x.id===draft.id)); }
+function setScore(k,v){ draft.scores[k]=Number(v); refreshSuggest(); const cnt=document.querySelector('.section-title .ct'); /* lightweight: update suggestion only */ }
+function toggleFlag(k,on){ if(on){ if(!draft.redFlags.includes(k)) draft.redFlags.push(k); } else { draft.redFlags=draft.redFlags.filter(x=>x!==k); } refreshSuggest(); }
+function refreshSuggest(){
+  const s=suggest(draft);
+  const fl=document.querySelector('.modal .flag'); if(!fl) return;
+  fl.className='flag '+(s.rec==='skip'?'':s.rec==='pursue'?'green':'amber');
+  fl.innerHTML=`<span class="b">Live suggestion: ${RECS[s.rec].icon} ${RECS[s.rec].label}</span> · score ${s.score}/35${s.reasons.length?`<div class="small" style="margin-top:3px">${s.reasons.slice(0,3).map(esc).join(' · ')}</div>`:''}`;
+}
+function saveOpp(){
+  if(!draft.name.trim()){ toast('Name is required'); return; }
+  draft.updatedAt=nowTS();
+  const i=state.opps.findIndex(x=>x.id===draft.id);
+  // duplicate guard on create
+  if(i<0){
+    const dup=state.opps.find(o=> o.name.trim().toLowerCase()===draft.name.trim().toLowerCase() || (draft.officialUrl && o.officialUrl===draft.officialUrl));
+    if(dup && !confirm('A similar sweepstakes ("'+dup.name+'") is already tracked. Add anyway?')) return;
+    state.opps.push(draft);
+  } else state.opps[i]=draft;
+  save(); closeModal(); render(); toast(i<0?'Added to tracker':'Saved');
+}
+
+/* ============================================================
+   LOG ENTRY — record an entry action (duplicate / limit guards)
+   ============================================================ */
+let entryDraft=null;
+function openLogEntry(oppId){
+  const o=state.opps.find(x=>x.id===oppId); if(!o) return;
+  entryDraft={ id:uid(), oppId, dateISO:todayISO(), ts:nowTS(), method:o.entryMethod, count:1, confirmation:'', emailUsed:o.emailUsed||state.settings.defaultEmail||'', notes:'', ruleConcern:false };
+  renderLogEntry(o);
+}
+function renderLogEntry(o){
+  const ne=nextEligible(o);
+  const tot=totalEntriesFor(o.id);
+  let warn='';
+  if(ne.state==='done') warn=`<div class="flag">⚠️ This is a <b>one-time</b> sweepstakes you've already entered. Re-entering may cause disqualification.</div>`;
+  else if(ne.state==='date' && !ne.ready) warn=`<div class="flag">⚠️ Per the <b>${FREQ[o.entryFrequency]}</b> limit, your next eligible entry is <b>${fmtDate(ne.iso)}</b>. Entering now risks an over-limit disqualification.</div>`;
+  if(o.maxEntries && tot>=Number(o.maxEntries)) warn+=`<div class="flag">⚠️ You've reached the max of ${o.maxEntries} entries. Logging more may violate the rules.</div>`;
+  if(isExpired(o)) warn+=`<div class="flag">⚠️ This sweepstakes deadline (${fmtDateShort(o.deadline)}) has passed.</div>`;
+
+  let h='';
+  h+=`<div class="sheetbar"><button class="iconbtn" onclick="closeModal()">✕</button><h2 style="flex:1">Log entry</h2></div>`;
+  h+=`<div class="card tight"><div class="b wrapnice">${esc(o.name)}</div><div class="small muted">${esc(o.sponsor||'')} · ${FREQ[o.entryFrequency]||o.entryFrequency}${o.maxEntries?' · max '+o.maxEntries:''} · ${tot} so far</div></div>`;
+  h+=warn;
+  h+=`<div class="card">`;
+  h+=`<div class="inline-grid">
+      <label class="field"><span>Date</span><input type="date" value="${entryDraft.dateISO}" oninput="entryDraft.dateISO=this.value"></label>
+      <label class="field"><span>Number of entries</span><input type="number" inputmode="numeric" min="1" value="${entryDraft.count}" oninput="entryDraft.count=parseInt(this.value)||1"></label></div>`;
+  h+=`<label class="field"><span>Entry method</span><select onchange="entryDraft.method=this.value">`+METHODS.map(m=>`<option ${entryDraft.method===m?'selected':''}>${m}</option>`).join('')+`</select></label>`;
+  h+=`<label class="field"><span>Confirmation # (if any)</span><input type="text" value="${esc(entryDraft.confirmation)}" oninput="entryDraft.confirmation=this.value"></label>`;
+  h+=`<label class="field"><span>Email used</span><input type="email" value="${esc(entryDraft.emailUsed)}" oninput="entryDraft.emailUsed=this.value"></label>`;
+  h+=`<label class="checkline"><input type="checkbox" onchange="entryDraft.ruleConcern=this.checked"><span class="t">Flag a possible rule concern about this entry</span></label>`;
+  h+=`<label class="field"><span>Notes</span><textarea oninput="entryDraft.notes=this.value" placeholder="e.g. entered 25 times at 12:59 PM">${esc(entryDraft.notes)}</textarea></label>`;
+  h+=`</div>`;
+  h+=`<button class="btn green block" onclick="commitEntry()">✓ Save entry</button>`;
+  openSheet(h);
+}
+function commitEntry(){
+  entryDraft.ts=new Date(entryDraft.dateISO+'T'+new Date().toTimeString().slice(0,8)).getTime()||nowTS();
+  entryDraft.count=Math.max(1,Number(entryDraft.count)||1);
+  state.entries.push(entryDraft);
+  const o=state.opps.find(x=>x.id===entryDraft.oppId);
+  if(o){
+    // auto-advance status sensibly
+    if(o.status==='active'||o.status==='maybe'||o.status==='researching'){
+      o.status = o.entryFrequency==='daily'?'daily-repeat':o.entryFrequency==='weekly'?'weekly-repeat':'entered';
+    }
+    o.updatedAt=nowTS();
+  }
+  save(); closeModal(); render();
+  toast('Entry logged'+(o&&nextEligible(o).state==='date'?' · next: '+fmtDateShort(nextEligible(o).iso):''));
+}
+
+/* ============================================================
+   LOG — full entry history
+   ============================================================ */
+function renderLog(){
+  let h='';
+  const es=state.entries.slice().sort((a,b)=>b.ts-a.ts);
+  const totalEntries=es.reduce((n,e)=>n+(Number(e.count)||0),0);
+  h+=`<div class="row" style="gap:8px;margin-bottom:10px">
+      <div class="stat"><div class="n">${es.length}</div><div class="l">Log entries</div></div>
+      <div class="stat"><div class="n">${totalEntries}</div><div class="l">Total entries</div></div>
+      <div class="stat"><div class="n">${new Set(es.map(e=>e.oppId)).size}</div><div class="l">Sweepstakes</div></div>
+      </div>`;
+  if(!es.length){ h+=`<div class="empty"><div class="big">📝</div><div class="b">No entries logged yet</div><div class="small muted" style="margin-top:6px">Open a sweepstakes in the tracker and tap “Log entry”.</div></div>`; view.innerHTML=h; return; }
+  // group by date
+  const byDate={};
+  es.forEach(e=>{ (byDate[e.dateISO]=byDate[e.dateISO]||[]).push(e); });
+  Object.keys(byDate).sort((a,b)=>b<a?-1:1).forEach(date=>{
+    h+=`<div class="section-title">${fmtDate(date)}</div>`;
+    byDate[date].forEach(e=>{
+      const o=state.opps.find(x=>x.id===e.oppId);
+      h+=`<div class="card tight click" onclick="${o?`openOppView('${o.id}')`:''}">
+        <div class="row top"><div style="flex:1;min-width:0">
+          <div class="b wrapnice">${esc(o?o.name:'(deleted sweepstakes)')}</div>
+          <div class="small muted wrapnice">${e.count} entr${e.count==1?'y':'ies'} · ${esc(e.method||'—')} · ${fmtClock(e.ts)}${e.confirmation?' · #'+esc(e.confirmation):''}${e.emailUsed?' · '+esc(e.emailUsed):''}</div>
+          ${e.notes?`<div class="small faint wrapnice" style="margin-top:2px">${esc(e.notes)}</div>`:''}
+        </div>
+        <div style="display:flex;flex-direction:column;gap:5px;align-items:flex-end">
+          ${e.ruleConcern?'<span class="tag red">⚠️ concern</span>':''}
+          <button class="iconbtn" onclick="event.stopPropagation();deleteEntry('${e.id}')">🗑</button>
+        </div></div></div>`;
+    });
+  });
+  view.innerHTML=h;
+}
+function deleteEntry(id){ if(!confirm('Delete this entry log?')) return; state.entries=state.entries.filter(e=>e.id!==id); save(); render(); toast('Entry deleted'); }
+
+/* ============================================================
+   REVIEW QUEUE — capture leads before full review
+   ============================================================ */
+function renderReview(){
+  let h='';
+  const pending=state.opps.filter(o=>o.status==='researching');
+  const q=state.queue.filter(x=>x.reviewStatus!=='done');
+
+  h+=`<div class="banner">Drop links here as you find them. Capture fast, review carefully later. Prefer <b>official sponsor pages</b> over third-party listing sites — the official rules always control.</div>`;
+
+  h+=`<div class="section-title">📥 Review queue<span class="ct">${q.length}</span></div>`;
+  if(!q.length) h+=`<div class="card tight muted small center">Queue empty. Tap + to drop a link you want to research.</div>`;
+  else h+=q.map(item=>queueCard(item)).join('');
+
+  h+=`<div class="section-title">🔬 In research (in tracker)<span class="ct">${pending.length}</span></div>`;
+  if(!pending.length) h+=`<div class="card tight muted small center">No tracked sweepstakes marked “Researching”.</div>`;
+  else h+=pending.map(o=>trackerCard(o)).join('');
+
+  const done=state.queue.filter(x=>x.reviewStatus==='done');
+  if(done.length) h+=`<div class="section-title">Archived queue<span class="ct">${done.length}</span></div>`+done.map(queueCard).join('');
+
+  view.innerHTML=h;
+}
+function queueCard(item){
+  const needs=[];
+  if(item.needsRules) needs.push('rules');
+  if(item.needsEligibility) needs.push('eligibility');
+  if(item.needsDeadline) needs.push('deadline');
+  return `<div class="card tight">
+    <div class="row top"><div style="flex:1;min-width:0">
+      <div class="wrapnice b small">${item.link?`<a href="${esc(item.link)}" target="_blank" rel="noopener">${esc(item.link)}</a>`:'(no link)'}</div>
+      <div class="small muted">${esc(item.source||'unknown source')} · found ${fmtDateShort(item.dateFound)} · ${item.priority||'normal'} priority</div>
+      ${needs.length?`<div class="small faint" style="margin-top:2px">Needs: ${needs.join(', ')}</div>`:''}
+      ${item.notes?`<div class="small faint wrapnice" style="margin-top:2px">${esc(item.notes)}</div>`:''}
+    </div></div>
+    <div class="row" style="gap:7px;margin-top:9px">
+      <button class="btn sm primary" onclick="promoteQueue('${item.id}')">Start review →</button>
+      <button class="btn sm ghost" onclick="openQueueEdit('${item.id}')">Edit</button>
+      <div class="spacer"></div>
+      ${item.reviewStatus==='done'?`<button class="btn xs ghost" onclick="setQueueDone('${item.id}',false)">Reopen</button>`:`<button class="btn xs ghost" onclick="setQueueDone('${item.id}',true)">Archive</button>`}
+      <button class="iconbtn" onclick="deleteQueue('${item.id}')">🗑</button>
+    </div></div>`;
+}
+let queueDraft=null;
+function openQueueEdit(id){
+  queueDraft = id ? Object.assign({},state.queue.find(x=>x.id===id)) :
+    {id:uid(), link:'', source:'', dateFound:todayISO(), needsRules:true, needsEligibility:true, needsDeadline:true, priority:'normal', reviewStatus:'new', notes:''};
+  const q=queueDraft;
+  let h='';
+  h+=`<div class="sheetbar"><button class="iconbtn" onclick="closeModal()">✕</button><h2 style="flex:1">${id?'Edit lead':'New lead'}</h2><button class="btn primary sm" onclick="saveQueue()">Save</button></div>`;
+  h+=`<div class="card">`;
+  h+=`<label class="field"><span>Link <span class="req">*</span></span><input type="url" value="${esc(q.link)}" oninput="queueDraft.link=this.value" placeholder="https://…"></label>`;
+  h+=`<label class="field"><span>Source</span><input type="text" value="${esc(q.source)}" oninput="queueDraft.source=this.value" placeholder="Brand site, email, social, directory…"></label>`;
+  h+=`<div class="inline-grid"><label class="field"><span>Date found</span><input type="date" value="${q.dateFound}" oninput="queueDraft.dateFound=this.value"></label>`;
+  h+=`<label class="field"><span>Priority</span><select onchange="queueDraft.priority=this.value">`+['low','normal','high'].map(p=>`<option ${q.priority===p?'selected':''}>${p}</option>`).join('')+`</select></label></div>`;
+  h+=`<div class="small muted" style="margin:4px 0 2px;font-weight:600">Still needs checking:</div>`;
+  h+=`<label class="checkline"><input type="checkbox" ${q.needsRules?'checked':''} onchange="queueDraft.needsRules=this.checked"><span class="t">Official rules</span></label>`;
+  h+=`<label class="checkline"><input type="checkbox" ${q.needsEligibility?'checked':''} onchange="queueDraft.needsEligibility=this.checked"><span class="t">Eligibility</span></label>`;
+  h+=`<label class="checkline"><input type="checkbox" ${q.needsDeadline?'checked':''} onchange="queueDraft.needsDeadline=this.checked"><span class="t">Deadline</span></label>`;
+  h+=`<label class="field" style="margin-top:8px"><span>Notes</span><textarea oninput="queueDraft.notes=this.value">${esc(q.notes)}</textarea></label>`;
+  h+=`</div><button class="btn primary block" onclick="saveQueue()">Save lead</button>`;
+  openSheet(h);
+}
+function saveQueue(){
+  if(!queueDraft.link.trim()){ toast('A link is required'); return; }
+  const i=state.queue.findIndex(x=>x.id===queueDraft.id);
+  if(i<0) state.queue.unshift(queueDraft); else state.queue[i]=queueDraft;
+  save(); closeModal(); render(); toast('Lead saved');
+}
+function deleteQueue(id){ if(!confirm('Delete this lead?')) return; state.queue=state.queue.filter(x=>x.id!==id); save(); render(); }
+function setQueueDone(id,done){ const q=state.queue.find(x=>x.id===id); if(q){ q.reviewStatus=done?'done':'new'; save(); render(); } }
+function promoteQueue(id){
+  const q=state.queue.find(x=>x.id===id); if(!q) return;
+  draft=newOpp();
+  draft.officialUrl=q.link; draft.notes=q.notes?('From queue: '+q.notes):'';
+  if(state.settings.defaultEmail) draft.emailUsed=state.settings.defaultEmail;
+  q.reviewStatus='done';
+  save();
+  renderOppEdit(true);
+}
+
+/* ============================================================
+   SETTINGS / DATA
+   ============================================================ */
+function renderSettings(){
+  let h='';
+  h+=`<div class="section-title">Preferences</div><div class="card">`;
+  h+=`<label class="field"><span>Default email for entries</span><input type="email" value="${esc(state.settings.defaultEmail)}" oninput="state.settings.defaultEmail=this.value;save()" placeholder="you@example.com"></label>`;
+  h+=`<div class="small muted">Used as the default “email used” when logging an entry. Keeping one consistent email per sweepstakes helps avoid duplicate-account disqualification.</div>`;
+  h+=`</div>`;
+
+  h+=`<div class="section-title">Data</div><div class="card">`;
+  h+=`<div class="kv"><span class="k">Sweepstakes tracked</span><span class="v b">${state.opps.length}</span></div>`;
+  h+=`<div class="kv"><span class="k">Entries logged</span><span class="v b">${state.entries.length}</span></div>`;
+  h+=`<div class="kv"><span class="k">Review queue</span><span class="v b">${state.queue.length}</span></div>`;
+  h+=`<div class="kv"><span class="k">Storage</span><span class="v">${memoryOnly?'⚠️ memory only':'localStorage (this device)'}</span></div>`;
+  h+=`</div>`;
+  h+=`<div class="row" style="gap:10px"><button class="btn block" onclick="exportJSON()">⬇️ Export JSON</button><button class="btn block" onclick="exportCSV()">⬇️ Export CSV</button></div>`;
+  h+=`<label class="btn ghost block" style="margin-top:10px">⬆️ Import JSON<input type="file" accept="application/json" style="display:none" onchange="importJSON(event)"></label>`;
+  if(!state.opps.length) h+=`<button class="btn ghost block" style="margin-top:10px" onclick="loadExample()">Load Liquid Death example</button>`;
+  h+=`<button class="btn ghost danger block" style="margin-top:10px" onclick="wipeAll()">Reset all data</button>`;
+
+  h+=`<div class="section-title">How this works</div>`;
+  h+=`<div class="card small muted" style="line-height:1.55">
+    <b>1. Discovery</b> — drop links into the Review queue.<br>
+    <b>2. Rules review</b> — read the official rules; fill the review form.<br>
+    <b>3. Risk review</b> — flag red flags; set risk & privacy.<br>
+    <b>4. Score</b> — rate each factor 0–5. Strict overrides can force Skip / Research regardless of score.<br>
+    <b>5. Decide</b> — Pursue / Maybe / Skip / Research more.<br>
+    <b>6. Track</b> — log every entry; the app computes next-eligible dates and warns on duplicates or over-limit entries.<br><br>
+    <i>No automation: this tool never creates accounts, submits forms, or bypasses CAPTCHAs / verification / rate limits. You always read the rules and enter yourself.</i>
+  </div>`;
+  h+=`<div class="center faint tiny" style="margin:8px 0 20px">Sweepstakes Tracker · manual-first MVP · all data stays on this device</div>`;
+  view.innerHTML=h;
+}
+function download(name,text,type){ const b=new Blob([text],{type}); const u=URL.createObjectURL(b); const a=document.createElement('a'); a.href=u; a.download=name; a.click(); setTimeout(()=>URL.revokeObjectURL(u),500); }
+function exportJSON(){ download('sweepstakes-tracker-'+todayISO()+'.json', JSON.stringify(state,null,2), 'application/json'); toast('Exported'); }
+function exportCSV(){
+  const cols=['name','sponsor','officialUrl','rulesUrl','prize','arv','deadline','eligibility','entryMethod','entryFrequency','maxEntries','purchaseRequired','noPurchaseMethod','riskLevel','privacyConcern','timeRequired','recommendation','status','score','entriesLogged','nextEligible','notes'];
+  const rows=[cols.join(',')];
+  state.opps.forEach(o=>{
+    const ne=nextEligible(o); const neTxt=ne.state==='date'?ne.iso:ne.state;
+    const vals=[o.name,o.sponsor,o.officialUrl,o.rulesUrl,o.prize,o.arv,o.deadline,o.eligibility,o.entryMethod,o.entryFrequency,o.maxEntries,o.purchaseRequired,o.noPurchaseMethod,o.riskLevel,o.privacyConcern,o.timeRequired,effectiveRec(o),o.status,scoreTotal(o),totalEntriesFor(o.id),neTxt,o.notes];
+    rows.push(vals.map(v=>{ v=String(v==null?'':v); return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v; }).join(','));
+  });
+  download('sweepstakes-'+todayISO()+'.csv', rows.join('\n'), 'text/csv');
+  toast('CSV exported');
+}
+function importJSON(ev){
+  const f=ev.target.files[0]; if(!f) return;
+  const r=new FileReader();
+  r.onload=()=>{ try{ const s=JSON.parse(r.result); if(!s.opps&&!s.entries) throw 0; if(!confirm('Replace all current data with the imported file?')) return; state=migrate(s); save(); render(); toast('Imported'); }catch(e){ toast('Invalid file'); } };
+  r.readAsText(f);
+}
+function wipeAll(){ if(!confirm('Erase ALL sweepstakes, entries and leads? This cannot be undone.')) return; state=defaultState(); save(); render(); toast('All data reset'); }
+
+/* ---------- example (the proven Liquid Death pattern) ---------- */
+function loadExample(){
+  const o=newOpp();
+  Object.assign(o,{
+    name:'Liquid Death × Taylor Morrison Home Sweepstakes',
+    sponsor:'Liquid Death / Taylor Morrison', sponsorVerified:true,
+    officialUrl:'https://liquiddeath.com', rulesUrl:'', hasRules:true,
+    prize:'Home or home-related prize package', arv:'',
+    deadline:addDaysIso(todayISO(),20),
+    eligibility:'US residents, 18+ (confirm exact states in official rules)',
+    locationRestrict:'US (verify excluded states)', ageRestrict:'18+',
+    entryMethod:'Online form', entryFrequency:'daily', maxEntries:'',
+    purchaseRequired:false, noPurchaseMethod:'Online / AMOE per rules',
+    riskLevel:'low', privacyConcern:'medium', timeRequired:'quick',
+    eligibleSelf:'unknown',
+    scores:{legitimacy:5,prizeValue:5,entryEffort:4,eligibilityClarity:3,privacySafety:3,deadlineUrgency:3,repeatValue:4},
+    status:'daily-repeat', recommendation:'',
+    notes:'Proven manual pattern: provided official rules, checked no-purchase entry, reviewed terms. Confirm exact daily max-entry and household limits before repeating. Accidental over-limit entries create disqualification risk.'
+  });
+  state.opps.push(o);
+  // an example entry log mirroring the proven event
+  state.entries.push({id:uid(), oppId:o.id, dateISO:todayISO(), ts:nowTS(), method:'Online form', count:25, confirmation:'', emailUsed:state.settings.defaultEmail||'', notes:'25 manual entries completed ~12:59 PM. Continue only if frequency & max-entry rules allow.', ruleConcern:false});
+  save(); state.tab='tracker'; render(); toast('Example loaded');
+}
+
+/* ---------- modal plumbing ---------- */
+function openSheet(html){ $('#modalRoot').innerHTML=`<div class="modal" onclick="if(event.target===this)closeModal()"><div class="sheet">${html}</div></div>`; document.body.style.overflow='hidden'; }
+function closeModal(){ $('#modalRoot').innerHTML=''; document.body.style.overflow=''; draft=null; entryDraft=null; queueDraft=null; }
+
+/* ---------- boot ---------- */
+render();
+</script>
+</body>
+</html>

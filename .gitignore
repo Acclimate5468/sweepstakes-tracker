@@ -1,0 +1,29 @@
+# Sweepstakes Tracker — conservative privacy + junk protections.
+# The GitHub remote is PUBLIC. Personal exported data must never be committed.
+#
+# NOTE: this app is a single static file (sweepstakes.html) plus README.md.
+# Neither of those is ignored below — only exported data, backups, and junk.
+
+# --- Exported / personal sweepstakes data (JSON/CSV from in-app Export) ---
+*.csv
+*.json
+# Re-allow project metadata files in case any are ever added:
+!package.json
+!package-lock.json
+
+# --- Local backups / export dumps ---
+exports/
+backups/
+*.backup
+*.bak
+
+# --- Logs ---
+*.log
+
+# --- OS junk ---
+.DS_Store
+Thumbs.db
+
+# --- Temporary / editor files ---
+*.tmp
+*.swp

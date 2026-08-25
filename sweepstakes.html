@@ -204,6 +204,12 @@ textarea{resize:vertical; min-height:60px; line-height:1.4}
 const $ = s => document.querySelector(s);
 const view = $('#view');
 function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function safeHref(s){
+  try{
+    const u=new URL(String(s));
+    return (u.protocol==='http:'||u.protocol==='https:') ? esc(u.href) : '';
+  }catch(_){ return ''; }
+}
 function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
 function todayISO(){ const d=new Date(); return isoOf(d); }
 function isoOf(d){ return new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,10); }
@@ -628,10 +634,11 @@ function openOppView(id){
   h+=`</div>`;
 
   // links
-  if(o.officialUrl||o.rulesUrl){
+  const officialHref=safeHref(o.officialUrl), rulesHref=safeHref(o.rulesUrl);
+  if(officialHref||rulesHref){
     h+=`<div class="card">`;
-    if(o.officialUrl) h+=`<div class="kv"><span class="k">Official URL</span><span class="v"><a href="${esc(o.officialUrl)}" target="_blank" rel="noopener">Open ↗</a></span></div>`;
-    if(o.rulesUrl) h+=`<div class="kv"><span class="k">Official rules</span><span class="v"><a href="${esc(o.rulesUrl)}" target="_blank" rel="noopener">Open ↗</a></span></div>`;
+    if(officialHref) h+=`<div class="kv"><span class="k">Official URL</span><span class="v"><a href="${officialHref}" target="_blank" rel="noopener">Open ↗</a></span></div>`;
+    if(rulesHref) h+=`<div class="kv"><span class="k">Official rules</span><span class="v"><a href="${rulesHref}" target="_blank" rel="noopener">Open ↗</a></span></div>`;
     h+=`</div>`;
   }
 
@@ -907,9 +914,10 @@ function queueCard(item){
   if(item.needsRules) needs.push('rules');
   if(item.needsEligibility) needs.push('eligibility');
   if(item.needsDeadline) needs.push('deadline');
+  const href=safeHref(item.link);
   return `<div class="card tight">
     <div class="row top"><div style="flex:1;min-width:0">
-      <div class="wrapnice b small">${item.link?`<a href="${esc(item.link)}" target="_blank" rel="noopener">${esc(item.link)}</a>`:'(no link)'}</div>
+      <div class="wrapnice b small">${href?`<a href="${href}" target="_blank" rel="noopener">${esc(item.link)}</a>`:esc(item.link||'(no link)')}</div>
       <div class="small muted">${esc(item.source||'unknown source')} · found ${fmtDateShort(item.dateFound)} · ${item.priority||'normal'} priority</div>
       ${needs.length?`<div class="small faint" style="margin-top:2px">Needs: ${needs.join(', ')}</div>`:''}
       ${item.notes?`<div class="small faint wrapnice" style="margin-top:2px">${esc(item.notes)}</div>`:''}
